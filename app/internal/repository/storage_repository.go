@@ -4,9 +4,11 @@ import (
 	"context"
 )
 
-// storageRepository é uma implementação temporária/fake do StorageRepository.
+// storageRepository é uma implementação temporária que mantém estado em memória.
 // Será substituída por uma implementação real com banco de dados ou blockchain.
 type storageRepository struct {
+	value int64
+
 	// TODO: Adicionar campos de conexão com banco de dados
 	// db *sql.DB
 	// client *blockchain.Client
@@ -18,8 +20,9 @@ func NewStorageRepository() *storageRepository {
 }
 
 // SaveValue implementa o método da interface StorageRepository.
-// Por enquanto, apenas simula a operação sem persistência real.
+// Armazena o valor em memória para uso temporário/desenvolvimento.
 func (r *storageRepository) SaveValue(ctx context.Context, value int64) error {
+	r.value = value
 	// TODO: Implementar persistência real
 	// Exemplos futuros:
 	// - Inserir em banco de dados (PostgreSQL, etc)
@@ -29,12 +32,12 @@ func (r *storageRepository) SaveValue(ctx context.Context, value int64) error {
 }
 
 // GetValue implementa o método da interface StorageRepository.
-// Por enquanto, retorna um valor padrão sem recuperação real.
+// Retorna o valor armazenado em memória.
 func (r *storageRepository) GetValue(ctx context.Context) (int64, error) {
+	return r.value, nil
 	// TODO: Implementar recuperação real
 	// Exemplos futuros:
 	// - Consultar banco de dados
 	// - Ler estado da blockchain
-	// - Cache em memória
-	return 0, nil
+	// - Cache distribuído
 }

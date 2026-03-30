@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	pb "challenge-besu/gen/pb"
 	"challenge-besu/internal/repository"
@@ -23,6 +24,7 @@ func main() {
 
 	// Criar servidor gRPC
 	grpcServer := grpc.NewServer()
+	reflection.Register(grpcServer) // Registrar reflection para facilitar o teste
 
 	// CAMADA 1: Inicializar Repository (camada de persistência)
 	storageRepo := repository.NewStorageRepository()
