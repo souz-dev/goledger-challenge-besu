@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package storage;
+
+option go_package = "github.com/seunome/challenge-besu/gen/pb";
+
+service StorageService {
+  rpc SetValue(SetValueRequest) returns (SetValueResponse);
+  rpc GetValue(GetValueRequest) returns (GetValueResponse);
+  rpc SyncValue(SyncValueRequest) returns (SyncValueResponse);
+  rpc CheckValue(CheckValueRequest) returns (CheckValueResponse);
+}
+
+message SetValueRequest {
+  int64 value = 1;
+}
+
+message SetValueResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetValueRequest {}
+
+message GetValueResponse {
+  int64 value = 1;
+}
+
+message SyncValueRequest {}
+
+message SyncValueResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CheckValueRequest {}
+
+message CheckValueResponse {
+  bool equal = 1;
+}

@@ -1,0 +1,44 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"net"
+
+	"google.golang.org/grpc"
+
+	pb "challenge-besu/gen/pb"
+	grpcserver "challenge-besu/internal/transport/grpc"
+	"challenge-besu/internal/service"
+	// "challenge-besu/internal/repository" // será importado quando implementado
+)
+
+func main() {
+	// Definir endereço de escuta
+	address := "localhost:50051"
+	listener, err := net.Listen("tcp", address)
+	if err != nil {
+		log.Fatalf("falha ao criar listener: %v", err)
+	}
+	defer listener.Close()
+
+	// Criar servidor gRPC
+	grpcServer := grpc.NewServer()
+
+	// CAMADA 1: Inicializar Repository (implementação de persistência)
+	// repository := repository.NewStorageRepository(database)
+
+	// CAMADA 2: Inicializar Service (camada de negócio)
+	// storageService := service.NewStorageService(repository)
+
+	// CAMADA 3: Inicializar gRPC Server (camada de transporte)
+	// storageServerInstance := grpcserver.NewStorageServer(storageService)
+
+	// Registrar o servidor de armazenamento
+	// pb.RegisterStorageServiceServer(grpcServer, storageServerInstance)
+
+	fmt.Printf("Servidor gRPC iniciado em %s\n", address)
+	if err := grpcServer.Serve(listener); err != nil {
+		log.Fatalf("falha ao servir: %v", err)
+	}
+}
