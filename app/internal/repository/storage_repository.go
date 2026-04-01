@@ -12,7 +12,7 @@ var ErrValueNotSet = errors.New("value not set")
 // storageRepository é uma implementação em memória com suporte a concorrência.
 // Protegida por mutex para uso seguro em ambiente gRPC concorrente.
 type storageRepository struct {
-	mu       sync.Mutex
+	mu       sync.RWMutex
 	value    int64
 	hasValue bool
 }
@@ -34,8 +34,8 @@ func (r *storageRepository) SaveValue(ctx context.Context, value int64) error {
 // GetValue retorna o valor armazenado em memória de forma segura para concorrência.
 // Retorna ErrValueNotSet se nenhum valor foi salvo ainda.
 func (r *storageRepository) GetValue(ctx context.Context) (int64, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	if !r.hasValue {
 		return 0, ErrValueNotSet
 	}
