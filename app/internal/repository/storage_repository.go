@@ -2,16 +2,19 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"sync"
 )
 
-// storageRepository é uma implementação temporária que mantém estado em memória.
-// Será substituída por uma implementação real com banco de dados ou blockchain.
-type storageRepository struct {
-	value int64
+// ErrValueNotSet é retornado quando GetValue é chamado antes de qualquer SaveValue.
+var ErrValueNotSet = errors.New("value not set")
 
-	// TODO: Adicionar campos de conexão com banco de dados
-	// db *sql.DB
-	// client *blockchain.Client
+// storageRepository é uma implementação em memória com suporte a concorrência.
+// Protegida por mutex para uso seguro em ambiente gRPC concorrente.
+type storageRepository struct {
+	mu       sync.Mutex
+	value    int64
+	hasValue bool
 }
 
 // NewStorageRepository cria uma nova instância do repositório de armazenamento.
@@ -19,25 +22,22 @@ func NewStorageRepository() *storageRepository {
 	return &storageRepository{}
 }
 
-// SaveValue implementa o método da interface StorageRepository.
-// Armazena o valor em memória para uso temporário/desenvolvimento.
+// SaveValue armazena o valor em memória de forma segura para concorrência.
 func (r *storageRepository) SaveValue(ctx context.Context, value int64) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.value = value
-	// TODO: Implementar persistência real
-	// Exemplos futuros:
-	// - Inserir em banco de dados (PostgreSQL, etc)
-	// - Fazer transação na blockchain (Besu)
-	// - Validar e sincronizar estado
+	r.hasValue = true
 	return nil
 }
 
-// GetValue implementa o método da interface StorageRepository.
-// Retorna o valor armazenado em memória.
+// GetValue retorna o valor armazenado em memória de forma segura para concorrência.
+// Retorna ErrValueNotSet se nenhum valor foi salvo ainda.
 func (r *storageRepository) GetValue(ctx context.Context) (int64, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if !r.hasValue {
+		return 0, ErrValueNotSet
+	}
 	return r.value, nil
-	// TODO: Implementar recuperação real
-	// Exemplos futuros:
-	// - Consultar banco de dados
-	// - Ler estado da blockchain
-	// - Cache distribuído
 }

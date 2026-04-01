@@ -9,5 +9,5 @@ type StorageService interface {
 	SetValue(ctx context.Context, value int64) error
 	GetValue(ctx context.Context) (int64, error)
 	SyncValue(ctx context.Context) error
-	CheckValue(ctx context.Context) (bool, error)
+	CheckValue(ctx context.Context, value int64) (bool, error)
 }

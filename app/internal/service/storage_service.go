@@ -46,10 +46,12 @@ func (s *storageService) SyncValue(ctx context.Context) error {
 	return nil
 }
 
-// CheckValue verifica a igualdade de um valor.
-// Por enquanto, retorna true (validação pendente).
-// Será expandido quando a validação for implementada.
-func (s *storageService) CheckValue(ctx context.Context) (bool, error) {
-	// TODO: Implementar validação de valor
-	return true, nil
+// CheckValue verifica a igualdade entre um valor recebido e o valor salvo no repositório.
+// Retorna false + erro se nenhum valor foi salvo ainda.
+func (s *storageService) CheckValue(ctx context.Context, value int64) (bool, error) {
+	savedValue, err := s.repo.GetValue(ctx)
+	if err != nil {
+		return false, err
+	}
+	return value == savedValue, nil
 }

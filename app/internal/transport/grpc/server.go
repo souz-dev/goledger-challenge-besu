@@ -48,10 +48,10 @@ func (s *StorageServer) SyncValue(ctx context.Context, req *pb.SyncValueRequest)
 	return &pb.SyncValueResponse{Success: true}, nil
 }
 
-// CheckValue implementa a RPC para verificar a igualdade de um valor.
+// CheckValue implementa a RPC para verificar a igualdade entre um valor e o valor salvo.
 // Delega a operação para a camada de serviço.
 func (s *StorageServer) CheckValue(ctx context.Context, req *pb.CheckValueRequest) (*pb.CheckValueResponse, error) {
-	equal, err := s.service.CheckValue(ctx)
+	equal, err := s.service.CheckValue(ctx, req.Value)
 	if err != nil {
 		return nil, err
 	}

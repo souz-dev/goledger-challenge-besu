@@ -287,6 +287,7 @@ func (x *SyncValueResponse) GetMessage() string {
 
 type CheckValueRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Value         int64                  `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -319,6 +320,13 @@ func (x *CheckValueRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CheckValueRequest.ProtoReflect.Descriptor instead.
 func (*CheckValueRequest) Descriptor() ([]byte, []int) {
 	return file_proto_storage_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *CheckValueRequest) GetValue() int64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
 }
 
 type CheckValueResponse struct {
@@ -381,8 +389,9 @@ const file_proto_storage_proto_rawDesc = "" +
 	"\x10SyncValueRequest\"G\n" +
 	"\x11SyncValueResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\x13\n" +
-	"\x11CheckValueRequest\"*\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\")\n" +
+	"\x11CheckValueRequest\x12\x14\n" +
+	"\x05value\x18\x01 \x01(\x03R\x05value\"*\n" +
 	"\x12CheckValueResponse\x12\x14\n" +
 	"\x05equal\x18\x01 \x01(\bR\x05equal2\x9d\x02\n" +
 	"\x0eStorageService\x12?\n" +
@@ -390,7 +399,7 @@ const file_proto_storage_proto_rawDesc = "" +
 	"\bGetValue\x12\x18.storage.GetValueRequest\x1a\x19.storage.GetValueResponse\x12B\n" +
 	"\tSyncValue\x12\x19.storage.SyncValueRequest\x1a\x1a.storage.SyncValueResponse\x12E\n" +
 	"\n" +
-	"CheckValue\x12\x1a.storage.CheckValueRequest\x1a\x1b.storage.CheckValueResponseB*Z(github.com/seunome/challenge-besu/gen/pbb\x06proto3"
+	"CheckValue\x12\x1a.storage.CheckValueRequest\x1a\x1b.storage.CheckValueResponseB\bZ\x06gen/pbb\x06proto3"
 
 var (
 	file_proto_storage_proto_rawDescOnce sync.Once

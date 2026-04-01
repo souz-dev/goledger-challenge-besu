@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package storage;
 
-option go_package = "github.com/seunome/challenge-besu/gen/pb";
+option go_package = "gen/pb";
 
 service StorageService {
   rpc SetValue(SetValueRequest) returns (SetValueResponse);
@@ -33,7 +33,9 @@ message SyncValueResponse {
   string message = 2;
 }
 
-message CheckValueRequest {}
+message CheckValueRequest {
+  int64 value = 1;
+}
 
 message CheckValueResponse {
   bool equal = 1;
