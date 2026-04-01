@@ -138,3 +138,15 @@ func TestCheckValue_ZeroAfterSet(t *testing.T) {
 		t.Error("esperado true para SetValue(0) + CheckValue(0), got false")
 	}
 }
+
+// --- SyncValue ---
+
+func TestSyncValue_Success(t *testing.T) {
+	repo := &mockRepository{}
+	svc := NewStorageService(repo)
+
+	err := svc.SyncValue(context.Background())
+	if err != nil {
+		t.Fatalf("esperado nil, got %v", err)
+	}
+}
