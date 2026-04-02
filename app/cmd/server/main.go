@@ -14,6 +14,7 @@ import (
 
 	pb "challenge-besu/gen/pb"
 	"challenge-besu/internal/blockchain"
+	"challenge-besu/internal/config"
 	"challenge-besu/internal/database"
 	"challenge-besu/internal/repository"
 	"challenge-besu/internal/service"
@@ -23,11 +24,14 @@ import (
 func main() {
 	ctx := context.Background()
 
-	// Database configuration
-	databaseURL := getEnv("DATABASE_URL", "postgres://admin:admin123@localhost:5433/challenge_besu?sslmode=disable")
+	// Load configuration
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("failed to load configuration: %v", err)
+	}
 
 	// Connect to PostgreSQL
-	pool, err := database.NewPostgresPool(ctx, databaseURL)
+	pool, err := database.NewPostgresPool(ctx, cfg.Database.URL)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
@@ -35,8 +39,7 @@ func main() {
 	log.Println("✅ Connected to PostgreSQL")
 
 	// Connect to Besu node
-	besuRPCURL := getEnv("BESU_RPC_URL", "http://localhost:8545")
-	besuClient, err := blockchain.NewBesuClient(ctx, besuRPCURL)
+	besuClient, err := blockchain.NewBesuClient(ctx, cfg.Besu.RPCURL)
 	if err != nil {
 		log.Fatalf("failed to connect to Besu node: %v", err)
 	}
@@ -56,13 +59,10 @@ func main() {
 	log.Printf("✅ Connected to Besu (Chain ID: %s, Block: %d)", chainID.String(), blockNumber)
 
 	// Load smart contract with signer
-	contractAddress := getEnv("CONTRACT_ADDRESS", "0x42699a7612a82f1d9c36148af9c77354759b210b")
-	privateKey := getEnv("PRIVATE_KEY", "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63")
-
-	if err := besuClient.LoadContractWithSigner(ctx, contractAddress, privateKey); err != nil {
+	if err := besuClient.LoadContractWithSigner(ctx, cfg.Besu.ContractAddress, cfg.Besu.PrivateKey); err != nil {
 		log.Fatalf("failed to load contract with signer: %v", err)
 	}
-	log.Printf("✅ Contract loaded at %s", contractAddress)
+	log.Printf("✅ Contract loaded at %s", cfg.Besu.ContractAddress)
 
 	// Initialize repository
 	repo := repository.NewSQLRepository(pool)
@@ -72,8 +72,7 @@ func main() {
 	log.Println("✅ Service initialized with blockchain integration")
 
 	// gRPC server configuration
-	grpcPort := getEnv("GRPC_PORT", "50051")
-	address := fmt.Sprintf(":%s", grpcPort)
+	address := fmt.Sprintf(":%s", cfg.GRPCPort)
 
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
@@ -107,12 +106,4 @@ func main() {
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-}
-
-// getEnv returns environment variable or default value.
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
 }
