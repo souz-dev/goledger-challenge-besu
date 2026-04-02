@@ -32,15 +32,16 @@ func NewStorageService(repo StorageRepository, besuClient *blockchain.BesuClient
 }
 
 // SetValue writes value to blockchain (source of truth) and caches in database.
+// Returns transaction hash.
 // Flow: blockchain write → database save
-func (s *storageService) SetValue(ctx context.Context, value int64) error {
+func (s *storageService) SetValue(ctx context.Context, value int64) (string, error) {
 	// Convert int64 to *big.Int for blockchain
 	bigValue := big.NewInt(value)
 
 	// Write to blockchain (source of truth)
 	txHash, err := s.blockchain.SetStorageValue(ctx, bigValue)
 	if err != nil {
-		return fmt.Errorf("failed to write value to blockchain: %w", err)
+		return "", fmt.Errorf("failed to write value to blockchain: %w", err)
 	}
 
 	log.Printf("blockchain transaction mined: %s (value=%d)", txHash, value)
@@ -51,7 +52,7 @@ func (s *storageService) SetValue(ctx context.Context, value int64) error {
 		log.Printf("warning: failed to cache value in database: %v", err)
 	}
 
-	return nil
+	return txHash, nil
 }
 
 // GetValue reads from blockchain (source of truth) and updates database cache.

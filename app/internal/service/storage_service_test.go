@@ -41,7 +41,7 @@ func TestSetValue_RepositoryError(t *testing.T) {
 	svc := NewStorageService(repo, nil)
 
 	// This will fail at blockchain layer (expected), testing is done in integration tests
-	_ = svc.SetValue(context.Background(), 10)
+	_, _ = svc.SetValue(context.Background(), 10)
 }
 
 func TestCheckValue_Equal(t *testing.T) {

@@ -68,7 +68,7 @@ func (x *SetValueRequest) GetValue() int64 {
 type SetValueResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	TxHash        string                 `protobuf:"bytes,2,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -110,9 +110,9 @@ func (x *SetValueResponse) GetSuccess() bool {
 	return false
 }
 
-func (x *SetValueResponse) GetMessage() string {
+func (x *SetValueResponse) GetTxHash() string {
 	if x != nil {
-		return x.Message
+		return x.TxHash
 	}
 	return ""
 }
@@ -379,10 +379,10 @@ const file_proto_storage_proto_rawDesc = "" +
 	"\n" +
 	"\x13proto/storage.proto\x12\astorage\"'\n" +
 	"\x0fSetValueRequest\x12\x14\n" +
-	"\x05value\x18\x01 \x01(\x03R\x05value\"F\n" +
+	"\x05value\x18\x01 \x01(\x03R\x05value\"E\n" +
 	"\x10SetValueResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\x11\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x17\n" +
+	"\atx_hash\x18\x02 \x01(\tR\x06txHash\"\x11\n" +
 	"\x0fGetValueRequest\"(\n" +
 	"\x10GetValueResponse\x12\x14\n" +
 	"\x05value\x18\x01 \x01(\x03R\x05value\"\x12\n" +
