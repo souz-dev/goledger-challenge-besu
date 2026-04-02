@@ -3,6 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
+	"math/big"
+
+	"challenge-besu/internal/blockchain"
 )
 
 // StorageRepository define o contrato para operações de persistência.
@@ -13,35 +17,70 @@ type StorageRepository interface {
 }
 
 // storageService implementa a lógica de negócio da aplicação.
-// Por enquanto, atua como thin layer entre transport e repository.
-// Quando blockchain for integrado, coordenará múltiplas fontes de dados.
+// Coordena operações entre blockchain (source of truth) e database (cache).
 type storageService struct {
-	repo StorageRepository
+	repo       StorageRepository
+	blockchain *blockchain.BesuClient
 }
 
 // NewStorageService cria uma nova instância do serviço.
-func NewStorageService(repo StorageRepository) StorageService {
+func NewStorageService(repo StorageRepository, besuClient *blockchain.BesuClient) StorageService {
 	return &storageService{
-		repo: repo,
+		repo:       repo,
+		blockchain: besuClient,
 	}
 }
 
-// SetValue persiste um valor no banco de dados.
+// SetValue writes value to blockchain (source of truth) and caches in database.
+// Flow: blockchain write → database save
 func (s *storageService) SetValue(ctx context.Context, value int64) error {
-	return s.repo.SaveValue(ctx, value)
+	// Convert int64 to *big.Int for blockchain
+	bigValue := big.NewInt(value)
+
+	// Write to blockchain (source of truth)
+	txHash, err := s.blockchain.SetStorageValue(ctx, bigValue)
+	if err != nil {
+		return fmt.Errorf("failed to write value to blockchain: %w", err)
+	}
+
+	log.Printf("blockchain transaction mined: %s (value=%d)", txHash, value)
+
+	// Cache in database for fast reads (best effort)
+	if err := s.repo.SaveValue(ctx, value); err != nil {
+		// Log error but don't fail - blockchain is source of truth
+		log.Printf("warning: failed to cache value in database: %v", err)
+	}
+
+	return nil
 }
 
-// GetValue recupera o valor armazenado no banco de dados.
+// GetValue reads from blockchain (source of truth) and updates database cache.
+// Flow: blockchain read → database update (optional)
 func (s *storageService) GetValue(ctx context.Context) (int64, error) {
-	return s.repo.GetValue(ctx)
+	// Read from blockchain (source of truth)
+	bigValue, err := s.blockchain.GetStorageValue(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to read value from blockchain: %w", err)
+	}
+
+	// Convert *big.Int to int64
+	value := bigValue.Int64()
+
+	// Update database cache (best effort)
+	if err := s.repo.SaveValue(ctx, value); err != nil {
+		// Log error but don't fail - blockchain is source of truth
+		log.Printf("warning: failed to update database cache: %v", err)
+	}
+
+	return value, nil
 }
 
 // CheckValue verifica se o valor informado corresponde ao valor armazenado.
 // Retorna true se os valores forem iguais, false caso contrário.
 func (s *storageService) CheckValue(ctx context.Context, value int64) (bool, error) {
-	storedValue, err := s.repo.GetValue(ctx)
+	storedValue, err := s.GetValue(ctx)
 	if err != nil {
-		return false, fmt.Errorf("erro ao buscar valor armazenado: %w", err)
+		return false, fmt.Errorf("failed to get stored value: %w", err)
 	}
 	return value == storedValue, nil
 }

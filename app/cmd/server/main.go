@@ -55,12 +55,21 @@ func main() {
 
 	log.Printf("✅ Connected to Besu (Chain ID: %s, Block: %d)", chainID.String(), blockNumber)
 
+	// Load smart contract with signer
+	contractAddress := getEnv("CONTRACT_ADDRESS", "0x42699a7612a82f1d9c36148af9c77354759b210b")
+	privateKey := getEnv("PRIVATE_KEY", "0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63")
+
+	if err := besuClient.LoadContractWithSigner(ctx, contractAddress, privateKey); err != nil {
+		log.Fatalf("failed to load contract with signer: %v", err)
+	}
+	log.Printf("✅ Contract loaded at %s", contractAddress)
+
 	// Initialize repository
 	repo := repository.NewSQLRepository(pool)
 
-	// Initialize service
-	storageService := service.NewStorageService(repo)
-	log.Println("✅ Service initialized")
+	// Initialize service with blockchain integration
+	storageService := service.NewStorageService(repo, besuClient)
+	log.Println("✅ Service initialized with blockchain integration")
 
 	// gRPC server configuration
 	grpcPort := getEnv("GRPC_PORT", "50051")
