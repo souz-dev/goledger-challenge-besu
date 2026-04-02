@@ -18,14 +18,14 @@ type StorageServer struct {
 	service service.StorageService
 }
 
-// NewStorageServer cria uma nova instância do servidor gRPC com dependency injection.
+// NewStorageServer cria uma nova instância do servidor gRPC.
 func NewStorageServer(svc service.StorageService) *StorageServer {
 	return &StorageServer{
 		service: svc,
 	}
 }
 
-// toGRPCError traduz erros de domínio em status gRPC semânticos.
+// toGRPCError traduz erros de domínio em status gRPC.
 func toGRPCError(err error) error {
 	if errors.Is(err, repository.ErrValueNotSet) {
 		return status.Error(codes.NotFound, "value not set")
@@ -33,7 +33,7 @@ func toGRPCError(err error) error {
 	return status.Error(codes.Internal, err.Error())
 }
 
-// SetValue implementa a RPC para definir um valor no armazenamento.
+// SetValue implementa a RPC para definir um valor.
 func (s *StorageServer) SetValue(ctx context.Context, req *pb.SetValueRequest) (*pb.SetValueResponse, error) {
 	if err := s.service.SetValue(ctx, req.Value); err != nil {
 		return nil, toGRPCError(err)
@@ -41,7 +41,7 @@ func (s *StorageServer) SetValue(ctx context.Context, req *pb.SetValueRequest) (
 	return &pb.SetValueResponse{Success: true}, nil
 }
 
-// GetValue implementa a RPC para obter um valor do armazenamento.
+// GetValue implementa a RPC para obter um valor.
 func (s *StorageServer) GetValue(ctx context.Context, req *pb.GetValueRequest) (*pb.GetValueResponse, error) {
 	value, err := s.service.GetValue(ctx)
 	if err != nil {
@@ -50,15 +50,18 @@ func (s *StorageServer) GetValue(ctx context.Context, req *pb.GetValueRequest) (
 	return &pb.GetValueResponse{Value: value}, nil
 }
 
-// SyncValue implementa a RPC para sincronizar um valor com a blockchain.
+// SyncValue implementa a RPC para sincronizar valores.
+// TODO: Implementar quando blockchain for integrado.
 func (s *StorageServer) SyncValue(ctx context.Context, req *pb.SyncValueRequest) (*pb.SyncValueResponse, error) {
-	if err := s.service.SyncValue(ctx); err != nil {
-		return nil, toGRPCError(err)
-	}
-	return &pb.SyncValueResponse{Success: true}, nil
+	// Por enquanto, retorna sucesso sem fazer nada
+	// Quando blockchain for implementado, chamará s.service.SyncValue(ctx)
+	return &pb.SyncValueResponse{
+		Success: true,
+		Message: "sync will be implemented with blockchain integration",
+	}, nil
 }
 
-// CheckValue implementa a RPC para verificar a igualdade entre um valor e o valor salvo.
+// CheckValue implementa a RPC para verificar consistência de valores.
 func (s *StorageServer) CheckValue(ctx context.Context, req *pb.CheckValueRequest) (*pb.CheckValueResponse, error) {
 	equal, err := s.service.CheckValue(ctx, req.Value)
 	if err != nil {

@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	pb "challenge-besu/gen/pb"
-	"challenge-besu/internal/blockchain"
+	// "challenge-besu/internal/blockchain"
 	"challenge-besu/internal/database"
 	"challenge-besu/internal/repository"
 	"challenge-besu/internal/service"
@@ -34,26 +34,29 @@ func main() {
 	defer pool.Close()
 	log.Println("✅ Connected to PostgreSQL")
 
-	// Connect to Besu node
-	besuRPCURL := getEnv("BESU_RPC_URL", "http://localhost:8545")
-	besuClient, err := blockchain.NewBesuClient(ctx, besuRPCURL)
-	if err != nil {
-		log.Fatalf("failed to connect to Besu node: %v", err)
-	}
-	defer besuClient.Close()
+	// Connect to Besu node (COMMENTED FOR TESTING WITHOUT BESU)
+	/*
+		besuRPCURL := getEnv("BESU_RPC_URL", "http://localhost:8545")
+		besuClient, err := blockchain.NewBesuClient(ctx, besuRPCURL)
+		if err != nil {
+			log.Fatalf("failed to connect to Besu node: %v", err)
+		}
+		defer besuClient.Close()
 
-	// Validate Besu connection with health checks
-	chainID, err := besuClient.ChainID(ctx)
-	if err != nil {
-		log.Fatalf("failed to get chain ID: %v", err)
-	}
+		// Validate Besu connection with health checks
+		chainID, err := besuClient.ChainID(ctx)
+		if err != nil {
+			log.Fatalf("failed to get chain ID: %v", err)
+		}
 
-	blockNumber, err := besuClient.BlockNumber(ctx)
-	if err != nil {
-		log.Fatalf("failed to get block number: %v", err)
-	}
+		blockNumber, err := besuClient.BlockNumber(ctx)
+		if err != nil {
+			log.Fatalf("failed to get block number: %v", err)
+		}
 
-	log.Printf("✅ Connected to Besu (Chain ID: %s, Block: %d)", chainID.String(), blockNumber)
+		log.Printf("✅ Connected to Besu (Chain ID: %s, Block: %d)", chainID.String(), blockNumber)
+	*/
+	log.Println("⚠️  Besu connection disabled for testing")
 
 	// Initialize repository
 	repo := repository.NewSQLRepository(pool)
