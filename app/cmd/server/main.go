@@ -24,13 +24,11 @@ import (
 func main() {
 	ctx := context.Background()
 
-	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("failed to load configuration: %v", err)
 	}
 
-	// Connect to PostgreSQL
 	pool, err := database.NewPostgresPool(ctx, cfg.Database.URL)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
@@ -38,14 +36,12 @@ func main() {
 	defer pool.Close()
 	log.Println("✅ Connected to PostgreSQL")
 
-	// Connect to Besu node
 	besuClient, err := blockchain.NewBesuClient(ctx, cfg.Besu.RPCURL)
 	if err != nil {
 		log.Fatalf("failed to connect to Besu node: %v", err)
 	}
 	defer besuClient.Close()
 
-	// Validate Besu connection with health checks
 	chainID, err := besuClient.ChainID(ctx)
 	if err != nil {
 		log.Fatalf("failed to get chain ID: %v", err)
@@ -58,20 +54,15 @@ func main() {
 
 	log.Printf("✅ Connected to Besu (Chain ID: %s, Block: %d)", chainID.String(), blockNumber)
 
-	// Load smart contract with signer
 	if err := besuClient.LoadContractWithSigner(ctx, cfg.Besu.ContractAddress, cfg.Besu.PrivateKey); err != nil {
 		log.Fatalf("failed to load contract with signer: %v", err)
 	}
 	log.Printf("✅ Contract loaded at %s", cfg.Besu.ContractAddress)
 
-	// Initialize repository
 	repo := repository.NewSQLRepository(pool)
-
-	// Initialize service with blockchain integration
 	storageService := service.NewStorageService(repo, besuClient)
 	log.Println("✅ Service initialized with blockchain integration")
 
-	// gRPC server configuration
 	address := fmt.Sprintf(":%s", cfg.GRPCPort)
 
 	listener, err := net.Listen("tcp", address)
@@ -80,19 +71,14 @@ func main() {
 	}
 	defer listener.Close()
 
-	// Create gRPC server
 	grpcServer := grpc.NewServer(
-		grpc.MaxRecvMsgSize(10 * 1024 * 1024), // 10MB
+		grpc.MaxRecvMsgSize(10 * 1024 * 1024),
 	)
 
-	// Register service
 	storageServer := grpcserver.NewStorageServer(storageService)
 	pb.RegisterStorageServiceServer(grpcServer, storageServer)
-
-	// Enable reflection for grpcurl/Postman
 	reflection.Register(grpcServer)
 
-	// Graceful shutdown
 	go func() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
@@ -101,7 +87,6 @@ func main() {
 		grpcServer.GracefulStop()
 	}()
 
-	// Start server
 	log.Printf("🚀 gRPC server listening on %s", address)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)

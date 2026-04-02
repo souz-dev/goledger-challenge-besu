@@ -77,9 +77,41 @@ Expected output:
 
 ## API Reference
 
-The service exposes 4 gRPC methods (reflection enabled):
+The service exposes 4 gRPC methods (reflection enabled).
 
-### SetValue
+### Testing with Postman
+
+1. **Create new gRPC Request**
+   - Click **New** → **gRPC Request**
+   - Enter server URL: `localhost:50051`
+   - **Use Server Reflection** is enabled by default (discovers methods automatically)
+
+2. **Select Method**
+   - Choose `storage.StorageService/SetValue` (or any other method)
+
+3. **Send Request**
+   - For `SetValue`, enter JSON message:
+     ```json
+     {
+       "value": 42
+     }
+     ```
+   - Click **Invoke**
+
+4. **View Response**
+   - See transaction hash, values, or sync status
+
+### Testing with Insomnia
+
+1. **New Request** → Select **gRPC**
+2. **URL**: `localhost:50051`
+3. Insomnia auto-discovers methods via reflection
+4. Select method and enter JSON body
+5. **Send**
+
+### Testing with grpcurl (CLI)
+
+#### SetValue
 Write a value to the smart contract.
 
 ```bash
@@ -93,7 +125,7 @@ Response:
 }
 ```
 
-### GetValue
+#### GetValue
 Read current value from blockchain.
 
 ```bash
@@ -107,7 +139,7 @@ Response:
 }
 ```
 
-### SyncValue
+#### SyncValue
 Synchronize blockchain value to database.
 
 ```bash
@@ -117,15 +149,16 @@ grpcurl -plaintext localhost:50051 storage.StorageService/SyncValue
 Response:
 ```json
 {
-  "message": "Value synchronized successfully"
+  "success": true,
+  "message": "database cache synchronized with blockchain"
 }
 ```
 
-### CheckValue
+#### CheckValue
 Compare blockchain value with database cache.
 
 ```bash
-grpcurl -plaintext localhost:50051 storage.StorageService/CheckValue
+grpcurl -plaintext -d '{"value": 42}' localhost:50051 storage.StorageService/CheckValue
 ```
 
 Response:
